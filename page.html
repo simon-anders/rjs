@@ -1,0 +1,32 @@
+<html>
+
+<body>
+
+<script src="https://d3js.org/d3.v4.min.js"></script>
+
+<h4>Test</h4>
+
+<div id="log"></div>
+
+<script>
+   function log( msg ) {
+      d3.select("div").append("p").text( msg );
+   }
+
+   ws = new WebSocket( "ws://localhost:1235/", "RJS-0" );
+   ws.addEventListener( "open", function(event) { 
+      // ...
+   } ); 
+   ws.addEventListener( "message", function(event) {
+      msg = JSON.parse( event.data );
+      if( msg[0] == "EVAL_JS" ) {
+         res = eval( msg[2] );
+         if( msg[1] > -1 ) {
+            ws.send( JSON.stringify( [ "REPLY_JS", msg[1], res ] ) );
+         }
+      }
+   } );
+</script>
+
+</body>
+</html>
