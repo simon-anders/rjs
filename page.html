@@ -18,12 +18,31 @@
       // ...
    } ); 
    ws.addEventListener( "message", function(event) {
+      console.log( event.data )
       msg = JSON.parse( event.data );
       if( msg[0] == "EVAL_JS" ) {
-         res = eval( msg[2] );
-         if( msg[1] > -1 ) {
-            ws.send( JSON.stringify( [ "REPLY_JS", msg[1], res ] ) );
+         try{
+            res = eval( msg[2] ); 
+         } catch( e ) {
+            ws.send( JSON.stringify( [ "REPLY_JS_ERROR", msg[1], e.message ] ) );
+            throw( e )
          }
+         if( msg[1] > -1 ) {
+            ws.send( JSON.stringify( [ "REPLY_JS", msg[1], JSON.stringify(res) ] ) );
+         }
+      } else if( msg[0] == "CALL_JS" ) {
+         console.log( msg[3] )
+         try{
+            res = window[msg[2]].apply( undefined, msg[3] ); 
+         } catch( e ) {
+            ws.send( JSON.stringify( [ "REPLY_JS_ERROR", msg[1], e.message ] ) );
+            throw( e )
+         }
+         if( msg[1] > -1 ) {
+            ws.send( JSON.stringify( [ "REPLY_JS", msg[1], JSON.stringify(res) ] ) );
+         }
+      } else {
+         console.error( "unknown message code")
       }
    } );
 </script>
